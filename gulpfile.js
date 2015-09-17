@@ -7,6 +7,7 @@ var watchify = require('watchify');
 var babel = require('babelify');
 
 function compile(watch) {
+	console.log("I'm running");
   var bundler = watchify(browserify('./es6/script.es6', { debug: true }).transform(babel));
 
   function rebundle() {

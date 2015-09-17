@@ -5,6 +5,8 @@ from "./data";
 
 var ForceLayout = function(spec) {
     this.spec = spec;
+	this.majorAngle = 2 * Math.PI / 3,
+    this.minorAngle = 1 * Math.PI / 12;
     this.svg = d3.select(spec.selector).append("svg:svg")
         .attr('width', spec.width)
         .attr('height', spec.height)
@@ -17,8 +19,10 @@ var ForceLayout = function(spec) {
         .links(this.links)
         .size([spec.width, spec.height])
         .charge(-100);
-    this.angle = d3.scale.ordinal().domain(d3.range(4)).rangePoints([0, 2 * Math.PI]);
-    this.radius = d3.scale.linear().range([this.spec.innerRadius, this.spec.outerRadius]);
+		this.angle = d3.scale.ordinal()
+    .domain(["source", "source-target", "target-source", "target"])
+    .range([0, this.majorAngle - this.minorAngle, this.majorAngle + this.minorAngle, 2 * this.majorAngle]);
+    this.radius = d3.scale.linear().range([this.spec.innerRadius, this.spec.outerRadius]).domain(d3.extent(this.nodes, function(d) { return d.index; }));
     this.color = d3.scale.category10().domain(d3.range(20));
     if (!spec.hive) {
         this.forcify();
@@ -48,8 +52,12 @@ ForceLayout.prototype.hivify = function() {
         .attr("x1", this.radius.range()[0])
         .attr("x2", this.radius.range()[1]);
 		//TODO factor out repeated code
+		var i = 0;
     this.nodeEls.attr("transform", (d) => {
-        return "rotate(" + degrees(this.angle(d.x)) + "), translate(" + d.y + ", 0)";
+			i = i + 1;
+			console.log(i);
+        return "rotate(" + degrees(this.angle(d.x)) + "), translate(10, 0)";
+
     });
 }
 
@@ -65,7 +73,7 @@ ForceLayout.prototype.start = function() {
     this.nodeEls.exit().remove();
 
     this.nodeEls.attr("transform", (d) => {
-        return "rotate(" + degrees(this.angle(d.x)) + "), translate(" + d.y + ", 0)";
+        return "rotate(" + degrees(this.angle(d.x)) + "), translate(10, 0)";
     });
     this.nodeEls.append("circle").attr("r", 5).attr("fill", "red");
     if (!this.spec.hive) {
